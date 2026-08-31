@@ -1,0 +1,2334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание студента — с регистрацией</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --primary-light: #818cf8;
+            --primary-bg: #eef2ff;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --text-light: #475569;
+            --white: #ffffff;
+            --shadow: 0 20px 60px rgba(0,0,0,0.08);
+            --shadow-hover: 0 30px 80px rgba(79,70,229,0.15);
+            --radius: 20px;
+            --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .animate-fadeInUp { animation: fadeInUp 0.8s ease forwards; }
+        .animate-fadeIn { animation: fadeIn 0.6s ease forwards; }
+
+        .hero {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #c7d2fe 100%);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(79,70,229,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        .grid-bg {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(79,70,229,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79,70,229,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* AUTH */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 40px 36px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: var(--shadow-hover);
+            border: 1px solid rgba(255,255,255,0.5);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .auth-card .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-card .logo i {
+            font-size: 48px;
+            color: var(--primary);
+            background: rgba(79,70,229,0.1);
+            padding: 16px;
+            border-radius: 20px;
+        }
+
+        .auth-card .logo h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-top: 12px;
+            color: var(--text);
+        }
+
+        .auth-card .logo p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        .auth-card .form-group {
+            margin-bottom: 16px;
+        }
+
+        .auth-card .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .auth-card .form-group input,
+        .auth-card .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(226, 232, 240, 0.5);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--bg);
+        }
+
+        .auth-card .form-group input:focus,
+        .auth-card .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+        }
+
+        .auth-card .btn-auth {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: 0 4px 16px rgba(79,70,229,0.2);
+        }
+
+        .auth-card .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(79,70,229,0.3);
+        }
+
+        .auth-card .btn-auth-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            box-shadow: none;
+        }
+
+        .auth-card .btn-auth-secondary:hover {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 8px 30px rgba(79,70,229,0.3);
+        }
+
+        .auth-card .auth-switch {
+            text-align: center;
+            margin-top: 14px;
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .auth-card .auth-switch a {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .auth-card .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .auth-card .error-msg {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .auth-card .error-msg.show { display: block; }
+
+        .auth-card .success-msg {
+            background: #dcfce7;
+            color: #166534;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .auth-card .success-msg.show { display: block; }
+
+        .auth-card .code-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 12px 0;
+        }
+
+        .auth-card .code-input-group input {
+            width: 50px;
+            height: 56px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            border: 2px solid rgba(226, 232, 240, 0.5);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+            background: var(--bg);
+        }
+
+        .auth-card .code-input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79,70,229,0.08);
+        }
+
+        .auth-card .code-input-group input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .auth-card .resend-timer {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-light);
+            margin: 8px 0;
+        }
+
+        .auth-card .resend-timer a {
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* TOPBAR */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 20px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-left .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .topbar-left .logo i {
+            font-size: 26px;
+            color: var(--primary);
+            background: rgba(255,255,255,0.7);
+            padding: 10px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(79,70,229,0.1);
+        }
+
+        .topbar-left .logo small {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-light);
+            margin-left: 4px;
+        }
+
+        .topbar-left h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: var(--text);
+        }
+
+        .topbar-left h1 small {
+            font-weight: 400;
+            font-size: 14px;
+            color: var(--text-light);
+            margin-left: 8px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-right .icon-btn {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.5);
+            color: var(--text-light);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .topbar-right .icon-btn:hover {
+            background: var(--white);
+            color: var(--text);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .topbar-right .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: var(--white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 16px rgba(79,70,229,0.2);
+        }
+
+        .topbar-right .avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(79,70,229,0.3);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            font-size: 13px;
+            color: var(--text-light);
+        }
+
+        .user-info .name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* STATS */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            background: rgba(255,255,255,0.9);
+        }
+
+        .stat-card .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .stat-card .icon.blue { background: #dbeafe; color: #2563eb; }
+        .stat-card .icon.green { background: #dcfce7; color: #16a34a; }
+        .stat-card .icon.purple { background: #ede9fe; color: #7c3aed; }
+        .stat-card .icon.orange { background: #fef3c7; color: #d97706; }
+
+        .stat-card .info h4 {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-card .info p {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        /* PAGE HEADER */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .page-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-header h2 i {
+            color: var(--primary);
+        }
+
+        .page-header .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            box-shadow: 0 4px 16px rgba(79,70,229,0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(79,70,229,0.3);
+        }
+
+        .btn-outline {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            color: var(--text);
+        }
+
+        .btn-outline:hover {
+            background: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(239,68,68,0.3);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+
+        /* CARD */
+        .card {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            background: rgba(255,255,255,0.85);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-header h3 i {
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-info { background: #dbeafe; color: #1e40af; }
+
+        /* SCHEDULE TABLE */
+        .schedule-wrapper {
+            overflow-x: auto;
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            min-width: 800px;
+        }
+
+        .schedule-table th {
+            background: rgba(79,70,229,0.08);
+            padding: 12px 12px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-light);
+            border: 1px solid rgba(226, 232, 240, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 13px;
+        }
+
+        .schedule-table th .day-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .schedule-table td {
+            padding: 6px;
+            border: 1px solid rgba(226, 232, 240, 0.3);
+            vertical-align: top;
+            min-height: 80px;
+            width: 14.28%;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .schedule-table .time-column {
+            width: 90px;
+            min-width: 90px;
+            text-align: center;
+            font-weight: 500;
+            color: var(--text-light);
+            background: rgba(255,255,255,0.3);
+            font-size: 12px;
+            padding: 8px 4px;
+        }
+
+        .schedule-cell {
+            min-height: 80px;
+            padding: 4px;
+        }
+
+        /* LESSON CARD */
+        .lesson-card {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin: 4px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--primary);
+            cursor: grab;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .lesson-card:active {
+            cursor: grabbing;
+        }
+
+        .lesson-card .subject {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: var(--text);
+        }
+
+        .lesson-card .teacher {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .lesson-card .room {
+            font-size: 11px;
+            color: var(--text-light);
+            background: var(--bg);
+            padding: 1px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .lesson-card .lesson-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .lesson-card:hover .lesson-actions {
+            opacity: 1;
+        }
+
+        .lesson-card .lesson-actions button {
+            background: rgba(255,255,255,0.8);
+            border: none;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-light);
+        }
+
+        .lesson-card .lesson-actions button:hover {
+            background: var(--white);
+            transform: scale(1.1);
+        }
+
+        .lesson-card .lesson-actions .delete-btn:hover {
+            color: #ef4444;
+        }
+
+        .lesson-card.dragging {
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .drag-over {
+            background: rgba(79,70,229,0.08) !important;
+            border: 2px dashed var(--primary) !important;
+        }
+
+        /* EMPTY CELL */
+        .empty-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            color: var(--text-light);
+            font-size: 12px;
+            border: 2px dashed rgba(226, 232, 240, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .empty-cell:hover {
+            border-color: var(--primary);
+            background: rgba(79,70,229,0.04);
+        }
+
+        /* FORM */
+        .add-section {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 14px 18px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            padding: 16px 24px;
+            border-radius: 60px;
+            border: 2px solid rgba(79, 70, 229, 0.15);
+            box-shadow: 0 8px 28px -10px rgba(0, 20, 40, 0.06);
+            transition: all 0.25s;
+        }
+
+        .add-section:focus-within {
+            box-shadow: 0 8px 32px -10px rgba(79, 70, 229, 0.15);
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .add-section label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
+        .add-section select,
+        .add-section input {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(226, 232, 240, 0.5);
+            border-radius: 60px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: 0.2s;
+            color: var(--text);
+            min-width: 120px;
+            font-weight: 450;
+            cursor: pointer;
+        }
+
+        .add-section select:focus,
+        .add-section input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+            background: white;
+        }
+
+        .add-section input {
+            flex: 1;
+            min-width: 140px;
+            cursor: text;
+        }
+
+        .add-section select option {
+            padding: 8px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border: none;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 11px 30px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1);
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px -6px rgba(79, 70, 229, 0.3);
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 14px 30px -10px var(--primary);
+            background: linear-gradient(135deg, #5b52f0, #4f46e5);
+        }
+
+        .btn-add:active {
+            transform: scale(0.96) translateY(0);
+        }
+
+        .btn-clear {
+            background: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            font-weight: 500;
+            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-clear:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 12px;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 14px 24px;
+            border-radius: 12px;
+            color: var(--white);
+            font-weight: 500;
+            font-size: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            transform: translateX(120%);
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 420px;
+        }
+
+        .toast.show { transform: translateX(0); }
+        .toast.success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.info { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: var(--radius);
+            max-width: 550px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.3);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        .modal-header h3 {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .modal-header .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-light);
+            transition: var(--transition);
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .modal-header .close-btn:hover {
+            background: rgba(239,68,68,0.1);
+            color: #ef4444;
+        }
+
+        .modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .modal-body .full-width { grid-column: 1 / -1; }
+
+        .modal-body label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .modal-body input,
+        .modal-body select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--bg);
+        }
+
+        .modal-body input:focus,
+        .modal-body select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+        }
+
+        /* PROFILE MODAL */
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .profile-info .full-width { grid-column: 1 / -1; }
+
+        .profile-info .label {
+            font-size: 12px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .profile-info .value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            padding: 6px 0;
+            border-bottom: 2px solid rgba(79,70,229,0.1);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .modal-body { grid-template-columns: 1fr; }
+            .profile-info { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 820px) {
+            .hero { padding: 12px; }
+            .topbar-left h1 small { display: none; }
+            .page-header h2 { font-size: 22px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .card { padding: 16px; }
+            .add-section {
+                flex-direction: column;
+                align-items: stretch;
+                border-radius: 40px;
+                padding: 18px 16px;
+                gap: 12px;
+            }
+            .form-actions {
+                margin-left: 0;
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-add, .btn-clear {
+                width: 100%;
+                justify-content: center;
+            }
+            .add-section select,
+            .add-section input {
+                min-width: 100%;
+            }
+            .schedule-table { font-size: 12px; min-width: 600px; }
+            .schedule-table .time-column { width: 70px; min-width: 70px; font-size: 11px; }
+            .modal { padding: 20px; margin: 10px; }
+            .auth-card { padding: 28px 20px; }
+            .code-input-group input { width: 40px; height: 48px; font-size: 20px; }
+        }
+
+        @media (max-width: 480px) {
+            .topbar-left h1 { font-size: 18px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .schedule-table { font-size: 11px; min-width: 500px; }
+            .schedule-table .time-column { width: 60px; min-width: 60px; font-size: 10px; }
+            .auth-card { padding: 20px 16px; }
+            .user-info { display: none; }
+            .code-input-group input { width: 36px; height: 44px; font-size: 18px; }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Успешно!</span>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle"><i class="fas fa-plus"></i> Добавление занятия</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveLesson()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH PAGE -->
+    <div id="authPage" class="hero">
+        <div class="grid-bg"></div>
+        <div class="auth-container">
+            <div class="auth-card">
+                <div class="logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h2>UniSystem</h2>
+                    <p>Войдите или зарегистрируйтесь</p>
+                </div>
+
+                <div id="authError" class="error-msg">
+                    <i class="fas fa-exclamation-circle"></i> <span id="authErrorText">Ошибка</span>
+                </div>
+                <div id="authSuccess" class="success-msg">
+                    <i class="fas fa-check-circle"></i> <span id="authSuccessText">Успешно</span>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <div id="loginForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="loginEmail" placeholder="student@university.edu" value="student@uni.edu">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Пароль</label>
+                        <input type="password" id="loginPassword" placeholder="Введите пароль" value="123456">
+                    </div>
+                    <button class="btn-auth" onclick="login()"><i class="fas fa-sign-in-alt"></i> Войти</button>
+                    <div class="auth-switch">
+                        <a onclick="showForgotPassword()"><i class="fas fa-key"></i> Забыли пароль?</a>
+                    </div>
+                    <div class="auth-switch">
+                        Нет аккаунта? <a onclick="switchAuth('register')">Зарегистрироваться</a>
+                    </div>
+                </div>
+
+                <!-- REGISTER FORM -->
+                <div id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> ФИО</label>
+                        <input type="text" id="regFullName" placeholder="Иванов Иван Иванович" value="Студент Студентович">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="regEmail" placeholder="student@university.edu" value="student@uni.edu">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Пароль</label>
+                        <input type="password" id="regPassword" placeholder="Минимум 6 символов" value="123456">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-university"></i> Университет</label>
+                        <input type="text" id="regUniversity" placeholder="Название университета" value="МГУ">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-graduation-cap"></i> Группа / Курс</label>
+                        <input type="text" id="regGroup" placeholder="ИС-41, 3 курс" value="ИС-41">
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Номер телефона</label>
+                        <input type="text" id="regPhone" placeholder="+7 (999) 123-45-67" value="+7 (999) 123-45-67">
+                    </div>
+                    <button class="btn-auth" onclick="register()"><i class="fas fa-user-plus"></i> Зарегистрироваться</button>
+                    <div class="auth-switch">
+                        Уже есть аккаунт? <a onclick="switchAuth('login')">Войти</a>
+                    </div>
+                </div>
+
+                <!-- FORGOT PASSWORD FORM -->
+                <div id="forgotForm" style="display: none;">
+                    <div id="forgotStep1">
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Ваш Email</label>
+                            <input type="email" id="forgotEmail" placeholder="student@university.edu" value="student@uni.edu">
+                        </div>
+                        <button class="btn-auth" onclick="sendResetCode()">
+                            <i class="fas fa-paper-plane"></i> Отправить код на почту
+                        </button>
+                        <div class="auth-switch">
+                            <a onclick="switchAuth('login')"><i class="fas fa-arrow-left"></i> Вернуться ко входу</a>
+                        </div>
+                    </div>
+                    <div id="forgotStep2" style="display: none;">
+                        <p style="text-align: center; color: var(--text-light); font-size: 14px; margin-bottom: 16px;">
+                            <i class="fas fa-envelope"></i> Код отправлен на <strong id="forgotEmailDisplay">email</strong>
+                        </p>
+                        <div class="form-group">
+                            <label><i class="fas fa-shield-alt"></i> Введите 4-значный код</label>
+                            <div class="code-input-group" id="codeInputGroup">
+                                <input type="text" maxlength="1" class="code-input" id="code1" autofocus>
+                                <input type="text" maxlength="1" class="code-input" id="code2">
+                                <input type="text" maxlength="1" class="code-input" id="code3">
+                                <input type="text" maxlength="1" class="code-input" id="code4">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Новый пароль</label>
+                            <input type="password" id="newPassword" placeholder="Минимум 6 символов" value="123456">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-lock"></i> Подтвердите пароль</label>
+                            <input type="password" id="confirmPassword" placeholder="Повторите пароль" value="123456">
+                        </div>
+                        <button class="btn-auth" onclick="resetPassword()">
+                            <i class="fas fa-check"></i> Сменить пароль
+                        </button>
+                        <div class="resend-timer" id="resendTimer">
+                            <span id="timerText">Отправить код повторно через <strong id="timerCount">60</strong> сек</span>
+                            <a id="resendLink" style="display: none;" onclick="resendCode()">Отправить код повторно</a>
+                        </div>
+                        <div class="auth-switch">
+                            <a onclick="switchAuth('login')"><i class="fas fa-arrow-left"></i> Вернуться ко входу</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN PAGE -->
+    <div id="mainPage" class="hero" style="display: none;">
+        <div class="grid-bg"></div>
+        <div class="container">
+
+            <!-- TOPBAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <a href="#" class="logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>UniSystem <small>v4.0</small></span>
+                    </a>
+                    <h1>
+                        Расписание
+                        <small>студента</small>
+                    </h1>
+                </div>
+                <div class="topbar-right">
+                    <div class="user-info">
+                        <span class="name" id="userNameDisplay">Студент</span>
+                        <span id="userGroupDisplay">ИС-41</span>
+                    </div>
+                    <button class="icon-btn" title="Профиль" onclick="showProfile()">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="icon-btn" title="История" onclick="showHistory()">
+                        <i class="fas fa-clock"></i>
+                    </button>
+                    <button class="icon-btn" title="Тема" onclick="toggleTheme()">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="icon-btn" title="Выйти" onclick="logout()" style="color: #ef4444;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                    <div class="avatar" id="userAvatar">С</div>
+                </div>
+            </header>
+
+            <!-- STATS -->
+            <div class="stats-grid">
+                <div class="stat-card animate-fadeInUp" style="animation-delay:0.05s;">
+                    <div class="icon blue"><i class="fas fa-calendar-week"></i></div>
+                    <div class="info">
+                        <h4 id="totalLessons">0</h4>
+                        <p>Всего занятий</p>
+                    </div>
+                </div>
+                <div class="stat-card animate-fadeInUp" style="animation-delay:0.1s;">
+                    <div class="icon green"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="info">
+                        <h4 id="totalTeachers">0</h4>
+                        <p>Преподавателей</p>
+                    </div>
+                </div>
+                <div class="stat-card animate-fadeInUp" style="animation-delay:0.15s;">
+                    <div class="icon purple"><i class="fas fa-book-open"></i></div>
+                    <div class="info">
+                        <h4 id="totalSubjects">0</h4>
+                        <p>Предметов</p>
+                    </div>
+                </div>
+                <div class="stat-card animate-fadeInUp" style="animation-delay:0.2s;">
+                    <div class="icon orange"><i class="fas fa-door-open"></i></div>
+                    <div class="info">
+                        <h4 id="totalRooms">0</h4>
+                        <p>Аудиторий</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAGE HEADER -->
+            <div class="page-header animate-fadeInUp" style="animation-delay:0.25s;">
+                <h2>
+                    <i class="fas fa-calendar-alt"></i>
+                    Расписание <span id="currentGroupLabel" style="font-size: 18px; color: var(--text-light);">ИС-41</span>
+                </h2>
+                <div class="actions">
+                    <button class="btn btn-sm btn-outline" onclick="showToast('info', 'Экспорт PDF')">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-sm btn-outline" onclick="window.print()">
+                        <i class="fas fa-print"></i> Печать
+                    </button>
+                </div>
+            </div>
+
+            <!-- ADD FORM -->
+            <div class="add-section animate-fadeInUp" style="animation-delay:0.3s;" id="addForm">
+                <label>🕒 Время
+                    <select id="timeSelect">
+                        <option value="08:00-08:50">08:00-08:50</option>
+                        <option value="08:55-09:45">08:55-09:45</option>
+                        <option value="09:55-10:45">09:55-10:45</option>
+                        <option value="10:50-11:40">10:50-11:40</option>
+                        <option value="11:50-12:40">11:50-12:40</option>
+                        <option value="12:45-13:35">12:45-13:35</option>
+                        <option value="13:40-14:30">13:40-14:30</option>
+                        <option value="14:35-15:25">14:35-15:25</option>
+                        <option value="15:30-16:20">15:30-16:20</option>
+                    </select>
+                </label>
+                <label>📘 Предмет
+                    <input type="text" id="subjectInput" placeholder="Введите предмет" list="subjectList" value="Математика">
+                    <datalist id="subjectList">
+                        <option value="Математика"><option value="Физика"><option value="Химия">
+                        <option value="Биология"><option value="История"><option value="Философия">
+                        <option value="Экономика"><option value="Право"><option value="Иностранный язык">
+                        <option value="Программирование"><option value="Базы данных"><option value="Алгоритмы">
+                        <option value="Статистика"><option value="Менеджмент"><option value="Маркетинг">
+                        <option value="Психология"><option value="Социология"><option value="Культурология">
+                        <option value="Высшая математика"><option value="Дискретная математика">
+                        <option value="Сетевые технологии"><option value="Web-разработка">
+                    </datalist>
+                </label>
+                <label>👨‍🏫 Преподаватель
+                    <select id="teacherSelect">
+                        <option value="Смирнов А.П.">Смирнов А.П.</option>
+                        <option value="Кузнецова Е.И.">Кузнецова Е.И.</option>
+                        <option value="Морозов Д.А.">Морозов Д.А.</option>
+                        <option value="Нуржанов К.Т.">Нуржанов К.Т.</option>
+                        <option value="Сидорова М.П.">Сидорова М.П.</option>
+                        <option value="Волкова О.С.">Волкова О.С.</option>
+                    </select>
+                </label>
+                <label>🏫 Аудитория
+                    <select id="roomSelect">
+                        <option value="А-301">А-301</option><option value="А-208">А-208</option>
+                        <option value="Б-205">Б-205</option><option value="В-404">В-404</option>
+                        <option value="В-304">В-304</option><option value="Г-112">Г-112</option>
+                    </select>
+                </label>
+                <label>📅 День
+                    <select id="daySelect">
+                        <option value="monday">Понедельник</option>
+                        <option value="tuesday">Вторник</option>
+                        <option value="wednesday">Среда</option>
+                        <option value="thursday">Четверг</option>
+                        <option value="friday">Пятница</option>
+                        <option value="saturday">Суббота</option>
+                    </select>
+                </label>
+                <div class="form-actions">
+                    <button class="btn-add" id="addBtn">➕ Добавить</button>
+                    <button class="btn-clear" id="clearBtn">🗑️ Очистить</button>
+                </div>
+            </div>
+
+            <!-- SCHEDULE TABLE -->
+            <div class="card animate-fadeInUp" style="animation-delay:0.4s;">
+                <div class="card-header">
+                    <h3><i class="fas fa-table"></i> Расписание занятий</h3>
+                    <span class="badge badge-info" id="lessonCount">0 занятий</span>
+                </div>
+                <div class="schedule-wrapper">
+                    <table class="schedule-table" id="scheduleTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 90px; min-width: 90px;">Время</th>
+                                <th><span class="day-label">Понедельник</span></th>
+                                <th><span class="day-label">Вторник</span></th>
+                                <th><span class="day-label">Среда</span></th>
+                                <th><span class="day-label">Четверг</span></th>
+                                <th><span class="day-label">Пятница</span></th>
+                                <th><span class="day-label">Суббота</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="hint">💡 Нажмите на предмет и перетащите его в другую ячейку, чтобы изменить расписание</div>
+
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // TOAST
+        // ============================================================
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        let toastTimeout = null;
+
+        function showToast(type, message) {
+            if (toastTimeout) { clearTimeout(toastTimeout); toast.classList.remove('show'); }
+            toast.className = 'toast';
+            const icon = toast.querySelector('i');
+            if (type === 'success') { toast.classList.add('success'); icon.className = 'fas fa-check-circle'; }
+            else if (type === 'error') { toast.classList.add('error'); icon.className = 'fas fa-exclamation-circle'; }
+            else { toast.classList.add('info'); icon.className = 'fas fa-info-circle'; }
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        toast.addEventListener('click', function() {
+            this.classList.remove('show');
+            if (toastTimeout) { clearTimeout(toastTimeout); toastTimeout = null; }
+        });
+
+        // ============================================================
+        // AUTH SYSTEM
+        // ============================================================
+        let currentUser = null;
+        let resetCode = null;
+        let resetEmail = null;
+        let timerInterval = null;
+        let timerSeconds = 60;
+
+        function switchAuth(mode) {
+            document.getElementById('authError').classList.remove('show');
+            document.getElementById('authSuccess').classList.remove('show');
+            if (mode === 'login') {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('forgotForm').style.display = 'none';
+            } else if (mode === 'register') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                document.getElementById('forgotForm').style.display = 'none';
+            } else {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('forgotForm').style.display = 'block';
+            }
+            // Сбрасываем forgot шаги
+            document.getElementById('forgotStep1').style.display = 'block';
+            document.getElementById('forgotStep2').style.display = 'none';
+            if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        }
+
+        function showForgotPassword() {
+            switchAuth('forgot');
+            document.getElementById('forgotEmail').value = document.getElementById('loginEmail').value;
+        }
+
+        function showAuthError(text) {
+            document.getElementById('authErrorText').textContent = text;
+            document.getElementById('authError').classList.add('show');
+        }
+
+        function showAuthSuccess(text) {
+            document.getElementById('authSuccessText').textContent = text;
+            document.getElementById('authSuccess').classList.add('show');
+        }
+
+        // ============================================================
+        // REGISTER
+        // ============================================================
+        function register() {
+            const name = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const university = document.getElementById('regUniversity').value.trim();
+            const group = document.getElementById('regGroup').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+
+            if (!name || !email || !password || !university || !group || !phone) {
+                showAuthError('Заполните все поля');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthError('Пароль должен быть минимум 6 символов');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.email === email)) {
+                showAuthError('Пользователь с таким email уже существует');
+                return;
+            }
+
+            const user = { name, email, password, university, group, phone };
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+
+            showAuthSuccess('Регистрация успешна! Войдите в систему');
+            switchAuth('login');
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+        }
+
+        // ============================================================
+        // LOGIN
+        // ============================================================
+        function login() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            if (!email || !password) {
+                showAuthError('Введите email и пароль');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+
+            if (!user) {
+                showAuthError('Неверный email или пароль');
+                return;
+            }
+
+            currentUser = user;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            document.getElementById('authPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            updateUserUI();
+            showToast('success', `Добро пожаловать, ${user.name}!`);
+            loadSchedule();
+        }
+
+        // ============================================================
+        // FORGOT PASSWORD
+        // ============================================================
+        function sendResetCode() {
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (!email) {
+                showAuthError('Введите ваш email');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email);
+            if (!user) {
+                showAuthError('Пользователь с таким email не найден');
+                return;
+            }
+
+            // Генерируем 4-значный код
+            resetCode = String(Math.floor(1000 + Math.random() * 9000));
+            resetEmail = email;
+
+            // Сохраняем код в localStorage для "проверки почты"
+            const resetData = { email, code: resetCode, timestamp: Date.now() };
+            localStorage.setItem('resetCode_' + email, JSON.stringify(resetData));
+
+            // Показываем код в toast (симуляция отправки на почту)
+            showToast('info', `📧 Код отправлен на ${email}: ${resetCode}`);
+
+            // Переключаем на шаг 2
+            document.getElementById('forgotStep1').style.display = 'none';
+            document.getElementById('forgotStep2').style.display = 'block';
+            document.getElementById('forgotEmailDisplay').textContent = email;
+            document.getElementById('authError').classList.remove('show');
+
+            // Очищаем поля кода
+            document.querySelectorAll('.code-input').forEach(inp => inp.value = '');
+            document.getElementById('code1').focus();
+
+            // Запускаем таймер
+            startTimer();
+        }
+
+        function resendCode() {
+            if (resetEmail) {
+                sendResetCode();
+                document.getElementById('resendLink').style.display = 'none';
+                document.getElementById('timerText').style.display = 'inline';
+            }
+        }
+
+        function startTimer() {
+            timerSeconds = 60;
+            if (timerInterval) { clearInterval(timerInterval); }
+            document.getElementById('timerText').style.display = 'inline';
+            document.getElementById('resendLink').style.display = 'none';
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                document.getElementById('timerCount').textContent = timerSeconds;
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('timerText').style.display = 'none';
+                    document.getElementById('resendLink').style.display = 'inline';
+                }
+            }, 1000);
+        }
+
+        function resetPassword() {
+            const code1 = document.getElementById('code1').value;
+            const code2 = document.getElementById('code2').value;
+            const code3 = document.getElementById('code3').value;
+            const code4 = document.getElementById('code4').value;
+            const enteredCode = code1 + code2 + code3 + code4;
+
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (enteredCode.length !== 4) {
+                showAuthError('Введите все 4 цифры кода');
+                return;
+            }
+
+            // Проверяем код
+            const stored = localStorage.getItem('resetCode_' + resetEmail);
+            if (!stored) {
+                showAuthError('Код не найден. Запросите новый');
+                return;
+            }
+
+            const data = JSON.parse(stored);
+            if (data.code !== enteredCode) {
+                showAuthError('Неверный код подтверждения');
+                return;
+            }
+
+            // Проверяем, не истёк ли код (5 минут)
+            if (Date.now() - data.timestamp > 300000) {
+                showAuthError('Код истёк. Запросите новый');
+                localStorage.removeItem('resetCode_' + resetEmail);
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showAuthError('Пароль должен быть минимум 6 символов');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showAuthError('Пароли не совпадают');
+                return;
+            }
+
+            // Обновляем пароль
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = users.findIndex(u => u.email === resetEmail);
+            if (userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.removeItem('resetCode_' + resetEmail);
+                if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+
+                showAuthSuccess('Пароль успешно изменён!');
+                setTimeout(() => {
+                    switchAuth('login');
+                    document.getElementById('loginEmail').value = resetEmail;
+                    document.getElementById('loginPassword').value = newPassword;
+                    document.getElementById('authSuccess').classList.remove('show');
+                }, 1500);
+            }
+        }
+
+        // Автоматический переход по полям ввода кода
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInputs = document.querySelectorAll('.code-input');
+            codeInputs.forEach((input, index) => {
+                input.addEventListener('input', function(e) {
+                    if (this.value.length === 1 && index < 3) {
+                        codeInputs[index + 1].focus();
+                    }
+                });
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
+                        codeInputs[index - 1].focus();
+                    }
+                    if (e.key === 'Enter') {
+                        resetPassword();
+                    }
+                });
+                // Только цифры
+                input.addEventListener('keypress', function(e) {
+                    if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+
+        // ============================================================
+        // LOGOUT
+        // ============================================================
+        function logout() {
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                localStorage.removeItem('currentUser');
+                currentUser = null;
+                document.getElementById('mainPage').style.display = 'none';
+                document.getElementById('authPage').style.display = 'block';
+                showToast('info', 'Вы вышли из системы');
+            }
+        }
+
+        // ============================================================
+        // CHECK AUTH
+        // ============================================================
+        function checkAuth() {
+            const saved = localStorage.getItem('currentUser');
+            if (saved) {
+                try {
+                    currentUser = JSON.parse(saved);
+                    document.getElementById('authPage').style.display = 'none';
+                    document.getElementById('mainPage').style.display = 'block';
+                    updateUserUI();
+                    loadSchedule();
+                    return true;
+                } catch (e) {
+                    localStorage.removeItem('currentUser');
+                }
+            }
+            return false;
+        }
+
+        function updateUserUI() {
+            if (!currentUser) return;
+            document.getElementById('userNameDisplay').textContent = currentUser.name;
+            document.getElementById('userGroupDisplay').textContent = currentUser.group;
+            document.getElementById('currentGroupLabel').textContent = currentUser.group;
+            document.getElementById('userAvatar').textContent = currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        // ============================================================
+        // THEME TOGGLE
+        // ============================================================
+        let isDark = false;
+
+        function toggleTheme() {
+            isDark = !isDark;
+            const root = document.documentElement;
+            const btn = document.querySelector('.topbar-right .icon-btn[title="Тема"] i');
+            if (isDark) {
+                root.style.setProperty('--bg', '#0f172a');
+                root.style.setProperty('--text', '#f8fafc');
+                root.style.setProperty('--text-light', '#94a3b8');
+                root.style.setProperty('--white', '#1e293b');
+                root.style.setProperty('--shadow', '0 20px 60px rgba(0,0,0,0.4)');
+                btn.className = 'fas fa-sun';
+                showToast('info', 'Тёмная тема');
+            } else {
+                root.style.setProperty('--bg', '#f8fafc');
+                root.style.setProperty('--text', '#0f172a');
+                root.style.setProperty('--text-light', '#475569');
+                root.style.setProperty('--white', '#ffffff');
+                root.style.setProperty('--shadow', '0 20px 60px rgba(0,0,0,0.08)');
+                btn.className = 'fas fa-moon';
+                showToast('info', 'Светлая тема');
+            }
+        }
+
+        // ============================================================
+        // PROFILE
+        // ============================================================
+        function showProfile() {
+            if (!currentUser) return;
+            const content = `
+                <div class="profile-info" style="grid-template-columns: 1fr 1fr;">
+                    <div class="full-width" style="text-align: center; margin-bottom: 12px;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; margin: 0 auto;">
+                            ${currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="full-width"><span class="label">ФИО</span><div class="value">${currentUser.name}</div></div>
+                    <div class="full-width"><span class="label">Email</span><div class="value">${currentUser.email}</div></div>
+                    <div><span class="label">Университет</span><div class="value">${currentUser.university}</div></div>
+                    <div><span class="label">Группа / Курс</span><div class="value">${currentUser.group}</div></div>
+                    <div class="full-width"><span class="label">Телефон</span><div class="value">${currentUser.phone}</div></div>
+                    <div class="full-width" style="margin-top: 12px; display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-sm btn-primary" onclick="editProfile()"><i class="fas fa-edit"></i> Редактировать</button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-user-circle"></i> Мой профиль';
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function editProfile() {
+            if (!currentUser) return;
+            const content = `
+                <div class="full-width"><label>ФИО</label><input type="text" id="editName" value="${currentUser.name}"></div>
+                <div class="full-width"><label>Университет</label><input type="text" id="editUniversity" value="${currentUser.university}"></div>
+                <div><label>Группа / Курс</label><input type="text" id="editGroup" value="${currentUser.group}"></div>
+                <div><label>Телефон</label><input type="text" id="editPhone" value="${currentUser.phone}"></div>
+            `;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Редактирование профиля';
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            const footer = document.querySelector('.modal-footer');
+            footer.innerHTML = `
+                <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveProfile()">Сохранить</button>
+            `;
+        }
+
+        function saveProfile() {
+            const name = document.getElementById('editName').value.trim();
+            const university = document.getElementById('editUniversity').value.trim();
+            const group = document.getElementById('editGroup').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+
+            if (!name || !university || !group || !phone) {
+                showToast('error', 'Заполните все поля');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userIndex = users.findIndex(u => u.email === currentUser.email);
+            if (userIndex !== -1) {
+                users[userIndex] = { ...users[userIndex], name, university, group, phone };
+                localStorage.setItem('users', JSON.stringify(users));
+                currentUser = users[userIndex];
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateUserUI();
+                closeModal();
+                showToast('success', 'Профиль обновлён');
+            }
+        }
+
+        // ============================================================
+        // DATA
+        // ============================================================
+        const timeSlots = [
+            '08:00-08:50', '08:55-09:45', '09:55-10:45', '10:50-11:40',
+            '11:50-12:40', '12:45-13:35', '13:40-14:30', '14:35-15:25', '15:30-16:20'
+        ];
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+        const dayLabels = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+
+        let scheduleData = {};
+        let editLessonId = null;
+        let sortableInstances = [];
+
+        // ============================================================
+        // LOAD / SAVE
+        // ============================================================
+        function loadSchedule() {
+            try {
+                const key = `schedule_${currentUser.email}`;
+                const saved = localStorage.getItem(key);
+                if (saved) {
+                    scheduleData = JSON.parse(saved);
+                    days.forEach(day => {
+                        if (!scheduleData[day]) scheduleData[day] = [];
+                    });
+                } else {
+                    generateDefaultSchedule();
+                }
+                renderSchedule();
+                updateStats();
+            } catch (e) {
+                console.warn('Ошибка загрузки:', e);
+                generateDefaultSchedule();
+                renderSchedule();
+            }
+        }
+
+        function generateDefaultSchedule() {
+            scheduleData = {};
+            days.forEach(day => { scheduleData[day] = []; });
+            scheduleData['monday'] = [
+                { id: 1, subject: 'Высшая математика', teacher: 'Кузнецова Е.И.', room: 'А-301', time: '08:00-08:50' },
+                { id: 2, subject: 'Физика', teacher: 'Морозов Д.А.', room: 'Б-205', time: '09:55-10:45' },
+                { id: 3, subject: 'Программирование', teacher: 'Нуржанов К.Т.', room: 'А-208', time: '11:50-12:40' }
+            ];
+            scheduleData['tuesday'] = [
+                { id: 4, subject: 'Базы данных', teacher: 'Смирнов А.П.', room: 'В-404', time: '08:55-09:45' },
+                { id: 5, subject: 'Алгоритмы', teacher: 'Сидорова М.П.', room: 'В-304', time: '10:50-11:40' },
+                { id: 6, subject: 'Web-разработка', teacher: 'Морозов Д.А.', room: 'Б-205', time: '13:40-14:30' }
+            ];
+            scheduleData['wednesday'] = [
+                { id: 7, subject: 'Математика', teacher: 'Кузнецова Е.И.', room: 'А-301', time: '09:55-10:45' },
+                { id: 8, subject: 'Физика', teacher: 'Морозов Д.А.', room: 'Б-205', time: '12:45-13:35' }
+            ];
+            scheduleData['thursday'] = [
+                { id: 9, subject: 'История', teacher: 'Волкова О.С.', room: 'Г-112', time: '08:00-08:50' },
+                { id: 10, subject: 'Экономика', teacher: 'Смирнов А.П.', room: 'В-404', time: '10:50-11:40' }
+            ];
+            scheduleData['friday'] = [
+                { id: 11, subject: 'Иностранный язык', teacher: 'Сидорова М.П.', room: 'В-304', time: '08:55-09:45' },
+                { id: 12, subject: 'Менеджмент', teacher: 'Волкова О.С.', room: 'Г-112', time: '11:50-12:40' }
+            ];
+            scheduleData['saturday'] = [
+                { id: 13, subject: 'Психология', teacher: 'Кузнецова Е.И.', room: 'А-301', time: '09:55-10:45' }
+            ];
+            saveSchedule();
+        }
+
+        function saveSchedule() {
+            try {
+                const key = `schedule_${currentUser.email}`;
+                localStorage.setItem(key, JSON.stringify(scheduleData));
+            } catch (e) {
+                console.warn('Не удалось сохранить:', e);
+            }
+        }
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function renderSchedule() {
+            const tbody = document.getElementById('scheduleBody');
+            let html = '';
+
+            timeSlots.forEach((time, timeIndex) => {
+                html += `<tr>`;
+                html += `<td class="time-column">${time}</td>`;
+                days.forEach((day, dayIndex) => {
+                    const lessons = (scheduleData[day] || []).filter(l => l.time === time);
+                    html += `<td data-day="${day}" data-time="${time}" class="schedule-cell">`;
+                    if (lessons.length > 0) {
+                        lessons.forEach(lesson => {
+                            html += `
+                                <div class="lesson-card" data-id="${lesson.id}" data-day="${day}" data-time="${time}">
+                                    <div class="subject">${lesson.subject}</div>
+                                    <div class="teacher"><i class="fas fa-user-tie"></i> ${lesson.teacher}</div>
+                                    <div class="room"><i class="fas fa-door-open"></i> ${lesson.room}</div>
+                                    <div class="lesson-actions">
+                                        <button onclick="editLesson(${lesson.id})" title="Редактировать">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="delete-btn" onclick="deleteLesson(${lesson.id})" title="Удалить">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        html += `
+                            <div class="empty-cell" onclick="openAddModal('${day}', '${time}')">
+                                <i class="fas fa-plus-circle"></i> Добавить
+                            </div>
+                        `;
+                    }
+                    html += `</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            tbody.innerHTML = html;
+
+            let total = 0;
+            days.forEach(day => {
+                total += (scheduleData[day] || []).length;
+            });
+            document.getElementById('lessonCount').textContent = `${total} занятий`;
+
+            setTimeout(() => setupDragAndDrop(), 100);
+        }
+
+        // ============================================================
+        // DRAG & DROP
+        // ============================================================
+        function setupDragAndDrop() {
+            sortableInstances.forEach(inst => inst.destroy());
+            sortableInstances = [];
+
+            document.querySelectorAll('.schedule-cell').forEach(cell => {
+                const day = cell.dataset.day;
+                const time = cell.dataset.time;
+
+                const sortable = new Sortable(cell, {
+                    group: 'schedule',
+                    animation: 200,
+                    ghostClass: 'drag-over',
+                    draggable: '.lesson-card',
+                    handle: '.lesson-card',
+                    onEnd: function(evt) {
+                        const item = evt.item;
+                        const lessonId = parseInt(item.dataset.id);
+                        const newDay = evt.to.dataset.day;
+                        const newTime = evt.to.dataset.time;
+
+                        const lesson = findLesson(lessonId);
+                        if (lesson) {
+                            const oldDay = item.dataset.day;
+                            scheduleData[oldDay] = (scheduleData[oldDay] || []).filter(l => l.id !== lessonId);
+                            lesson.time = newTime;
+                            if (!scheduleData[newDay]) scheduleData[newDay] = [];
+                            scheduleData[newDay].push(lesson);
+                            saveSchedule();
+                            renderSchedule();
+                            updateStats();
+                            showToast('success', 'Занятие перемещено');
+                        }
+                    }
+                });
+                sortableInstances.push(sortable);
+            });
+        }
+
+        // ============================================================
+        // CRUD
+        // ============================================================
+        function findLesson(id) {
+            for (const day of days) {
+                const lessons = scheduleData[day] || [];
+                const found = lessons.find(l => l.id === id);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        function getLessonDay(id) {
+            for (const day of days) {
+                if ((scheduleData[day] || []).some(l => l.id === id)) return day;
+            }
+            return 'monday';
+        }
+
+        function openAddModal(day, time) {
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-plus"></i> Добавление занятия';
+            document.getElementById('modalBody').innerHTML = getModalContent(day, time);
+            editLessonId = null;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function editLesson(id) {
+            const lesson = findLesson(id);
+            if (!lesson) return;
+            const day = getLessonDay(id);
+            document.getElementById('modalTitle').innerHTML = '<i class="fas fa-edit"></i> Редактирование занятия';
+            document.getElementById('modalBody').innerHTML = getModalContent(day, lesson.time, lesson);
+            editLessonId = id;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function getModalContent(day, time, lesson = null) {
+            const subject = lesson ? lesson.subject : '';
+            const teacher = lesson ? lesson.teacher : 'Смирнов А.П.';
+            const room = lesson ? lesson.room : 'А-301';
+            return `
+                <div class="full-width"><label>Предмет</label>
+                    <input type="text" id="modalSubject" value="${subject}" placeholder="Введите предмет" list="modalSubjectList">
+                    <datalist id="modalSubjectList">
+                        <option value="Математика"><option value="Физика"><option value="Химия">
+                        <option value="Биология"><option value="История"><option value="Философия">
+                        <option value="Экономика"><option value="Программирование"><option value="Базы данных">
+                        <option value="Алгоритмы"><option value="Высшая математика"><option value="Web-разработка">
+                    </datalist>
+                </div>
+                <div><label>Преподаватель</label>
+                    <select id="modalTeacher">
+                        ${['Смирнов А.П.','Кузнецова Е.И.','Морозов Д.А.','Нуржанов К.Т.','Сидорова М.П.','Волкова О.С.']
+                            .map(t => `<option ${t === teacher ? 'selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                </div>
+                <div><label>Аудитория</label>
+                    <select id="modalRoom">
+                        ${['А-301','А-208','Б-205','В-404','В-304','Г-112']
+                            .map(r => `<option ${r === room ? 'selected' : ''}>${r}</option>`).join('')}
+                    </select>
+                </div>
+                <div><label>День</label>
+                    <select id="modalDay">
+                        ${days.map((d, i) => `<option value="${d}" ${d === day ? 'selected' : ''}>${dayLabels[i]}</option>`).join('')}
+                    </select>
+                </div>
+                <div><label>Время</label>
+                    <select id="modalTime">
+                        ${timeSlots.map(t => `<option value="${t}" ${t === time ? 'selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        }
+
+        function saveLesson() {
+            const subject = document.getElementById('modalSubject').value.trim();
+            const teacher = document.getElementById('modalTeacher').value;
+            const room = document.getElementById('modalRoom').value;
+            const day = document.getElementById('modalDay').value;
+            const time = document.getElementById('modalTime').value;
+
+            if (!subject) {
+                showToast('error', 'Введите название предмета');
+                return;
+            }
+
+            if (editLessonId) {
+                const oldLesson = findLesson(editLessonId);
+                if (oldLesson) {
+                    const oldDay = getLessonDay(editLessonId);
+                    scheduleData[oldDay] = (scheduleData[oldDay] || []).filter(l => l.id !== editLessonId);
+                    const updated = { ...oldLesson, subject, teacher, room, time };
+                    if (!scheduleData[day]) scheduleData[day] = [];
+                    scheduleData[day].push(updated);
+                    saveSchedule();
+                    renderSchedule();
+                    updateStats();
+                    closeModal();
+                    showToast('success', 'Занятие обновлено');
+                }
+            } else {
+                const newId = Date.now();
+                const lesson = { id: newId, subject, teacher, room, time };
+                if (!scheduleData[day]) scheduleData[day] = [];
+                scheduleData[day].push(lesson);
+                saveSchedule();
+                renderSchedule();
+                updateStats();
+                closeModal();
+                showToast('success', 'Занятие добавлено');
+            }
+        }
+
+        function deleteLesson(id) {
+            if (!confirm('Удалить это занятие?')) return;
+            const lesson = findLesson(id);
+            if (!lesson) return;
+            const day = getLessonDay(id);
+            scheduleData[day] = (scheduleData[day] || []).filter(l => l.id !== id);
+            saveSchedule();
+            renderSchedule();
+            updateStats();
+            showToast('success', 'Занятие удалено');
+        }
+
+        // ============================================================
+        // QUICK ADD FROM FORM
+        // ============================================================
+        document.getElementById('addBtn').addEventListener('click', function() {
+            const day = document.getElementById('daySelect').value;
+            const time = document.getElementById('timeSelect').value;
+            const subject = document.getElementById('subjectInput').value.trim();
+            const teacher = document.getElementById('teacherSelect').value;
+            const room = document.getElementById('roomSelect').value;
+
+            if (!subject) {
+                showToast('error', 'Введите название предмета');
+                return;
+            }
+
+            const newId = Date.now();
+            const lesson = { id: newId, subject, teacher, room, time };
+            if (!scheduleData[day]) scheduleData[day] = [];
+            scheduleData[day].push(lesson);
+            saveSchedule();
+            renderSchedule();
+            updateStats();
+            showToast('success', 'Занятие добавлено');
+            document.getElementById('subjectInput').value = '';
+            document.getElementById('subjectInput').placeholder = 'Введите предмет';
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            if (!confirm('Удалить всё расписание?')) return;
+            days.forEach(day => { scheduleData[day] = []; });
+            saveSchedule();
+            renderSchedule();
+            updateStats();
+            showToast('success', 'Расписание очищено');
+        });
+
+        document.getElementById('subjectInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('addBtn').click();
+            }
+        });
+
+        // ============================================================
+        // STATS
+        // ============================================================
+        function updateStats() {
+            let total = 0;
+            const teachers = new Set();
+            const subjects = new Set();
+            const rooms = new Set();
+
+            days.forEach(day => {
+                const lessons = scheduleData[day] || [];
+                total += lessons.length;
+                lessons.forEach(l => {
+                    if (l.teacher) teachers.add(l.teacher);
+                    if (l.subject) subjects.add(l.subject);
+                    if (l.room) rooms.add(l.room);
+                });
+            });
+
+            document.getElementById('totalLessons').textContent = total;
+            document.getElementById('totalTeachers').textContent = teachers.size;
+            document.getElementById('totalSubjects').textContent = subjects.size;
+            document.getElementById('totalRooms').textContent = rooms.size;
+        }
+
+        // ============================================================
+        // HISTORY
+        // ============================================================
+        let historyData = [];
+
+        function showHistory() {
+            const key = `history_${currentUser.email}`;
+            const saved = localStorage.getItem(key);
+            if (saved) historyData = JSON.parse(saved);
+
+            const content = `
+                <div class="full-width">
+                    <h4 style="margin-bottom: 12px;">📋 История действий</h4>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${historyData.length === 0 ? `
+                            <p style="color: var(--text-light); text-align: center; padding: 20px;">История пуста</p>
+                        ` : historyData.map(h => `
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(226,232,240,0.3); font-size: 13px;">
+                                <span style="color: var(--text-light); font-size: 12px; min-width: 80px;">${h.time}</span>
+                                <span style="flex: 1;">${h.action}: <strong>${h.target}</strong></span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${historyData.length > 0 ? `
+                        <div style="margin-top: 12px; text-align: right;">
+                            <button class="btn btn-sm btn-danger" onclick="clearHistory()">Очистить историю</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('modalTitle').innerHTML = '📋 История';
+            document.getElementById('modalBody').innerHTML = content;
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function clearHistory() {
+            historyData = [];
+            const key = `history_${currentUser.email}`;
+            localStorage.setItem(key, JSON.stringify(historyData));
+            showToast('success', 'История очищена');
+            closeModal();
+        }
+
+        function addHistory(action, target) {
+            const entry = {
+                time: new Date().toLocaleString(),
+                action: action,
+                target: target
+            };
+            historyData.unshift(entry);
+            if (historyData.length > 50) historyData.pop();
+            const key = `history_${currentUser.email}`;
+            localStorage.setItem(key, JSON.stringify(historyData));
+        }
+
+        // ============================================================
+        // MODAL
+        // ============================================================
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+            editLessonId = null;
+            const footer = document.querySelector('.modal-footer');
+            footer.innerHTML = `
+                <button class="btn btn-outline" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveLesson()">Сохранить</button>
+            `;
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        if (!checkAuth()) {
+            document.getElementById('authPage').style.display = 'block';
+            document.getElementById('mainPage').style.display = 'none';
+            // Тестовый пользователь
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (!users.find(u => u.email === 'student@uni.edu')) {
+                users.push({
+                    name: 'Студент Студентович',
+                    email: 'student@uni.edu',
+                    password: '123456',
+                    university: 'МГУ',
+                    group: 'ИС-41',
+                    phone: '+7 (999) 123-45-67'
+                });
+                localStorage.setItem('users', JSON.stringify(users));
+            }
+        }
+
+        console.log('✅ Расписание студента с регистрацией и восстановлением пароля загружено');
+        console.log('👤 Для входа: student@uni.edu / 123456');
+        console.log('🔑 Для восстановления пароля используйте "Забыли пароль?"');
+        console.log('📧 Код подтверждения будет показан в уведомлении (симуляция почты)');
+        console.log('⏰ Временные слоты: 08:00-08:50, 08:55-09:45, 09:55-10:45, 10:50-11:40, 11:50-12:40, 12:45-13:35, 13:40-14:30, 14:35-15:25, 15:30-16:20');
+        console.log('💡 Поддерживается Drag & Drop');
+    </script>
+</body>
+</html>
